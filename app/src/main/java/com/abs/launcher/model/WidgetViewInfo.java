@@ -5,5 +5,5 @@ package com.abs.launcher.model;
  */
 
 public class WidgetViewInfo extends HomeItemInfo {
-
+    int widgetViewType;
 }

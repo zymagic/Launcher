@@ -11,7 +11,6 @@ import java.util.List;
  */
 
 public class FolderInfo extends ItemInfo {
-    int category;
 
     @Override
     public List<ItemAction> getDeleteAction(List<ItemAction> actions) {

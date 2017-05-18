@@ -5,4 +5,5 @@ package com.abs.launcher.model;
  */
 
 public class AppWidgetInfo extends HomeItemInfo {
+    int widgetId;
 }

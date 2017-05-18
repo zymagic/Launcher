@@ -7,13 +7,14 @@ import java.util.List;
  */
 
 public abstract class ItemInfo {
-    int id;
+    int id = -1;
     int type;
-    int container, x, y, spanX, spanY;
+    int container, screen, x, y, spanX, spanY;
+    int category;
 
     public abstract List<ItemAction> getDeleteAction(List<ItemAction> actions);
 
-    public List<ItemAction> getPopupAction(List<ItemAction> actions) {
+    public List<ItemAction> getQuickAction(List<ItemAction> actions) {
         return actions;
     }
 }

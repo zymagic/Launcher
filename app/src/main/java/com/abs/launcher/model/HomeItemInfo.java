@@ -1,7 +1,5 @@
 package com.abs.launcher.model;
 
-import android.content.ClipData;
-
 import com.abs.launcher.ItemAction;
 import com.abs.launcher.ItemInfo;
 
