@@ -181,7 +181,6 @@ public class DbManager {
             }
 
             boolean notNull = f.getAnnotation(NOT_NULL.class) != null;
-            String columnNotNull = notNull ? " NOT NULL" : "";
 
             String columnDefault = "";
             DEFAULT_VALUE defaultValue = f.getAnnotation(DEFAULT_VALUE.class);
