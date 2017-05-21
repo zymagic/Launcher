@@ -23,13 +23,13 @@ public class AbsObjectLoader<K, T, M extends AbsObjectLoader.AbsAttachment<K, T>
 
     private HashMap<K, ArrayList<M>> mPendingTasks = new HashMap<>();
 
-    private AbsCallback<K, T> mCallback;
+    private AbsCallback<M> mCallback;
 
     private Handler mHandler;
 
     private Executor mExecutor;
 
-    public AbsObjectLoader(AbsCallback<K, T> callback) {
+    public AbsObjectLoader(AbsCallback<M> callback) {
         mCallback = callback;
         mHandler = new Handler(Looper.getMainLooper(), this);
         mExecutor = Executors.newFixedThreadPool(5);
@@ -50,7 +50,7 @@ public class AbsObjectLoader<K, T, M extends AbsObjectLoader.AbsAttachment<K, T>
         return this;
     }
 
-    public M syncLoad(M attachment) {
+    public <MM extends M> MM syncLoad(MM attachment) {
         if (attachment == null || attachment.token == null) {
             return null;
         }
@@ -60,7 +60,7 @@ public class AbsObjectLoader<K, T, M extends AbsObjectLoader.AbsAttachment<K, T>
         return loadFromLevel(attachment, 0);
     }
 
-    public M loadAsync(final M attachment) {
+    public <MM extends M> MM loadAsync(final MM attachment) {
         if (attachment == null || attachment.token == null) {
             return null;
         }
@@ -82,7 +82,7 @@ public class AbsObjectLoader<K, T, M extends AbsObjectLoader.AbsAttachment<K, T>
         return null;
     }
 
-    private M loadFromLevel(M attachment, int levelStart) {
+    private <MM extends M> MM loadFromLevel(MM attachment, int levelStart) {
         K token = attachment.token;
         T object = null;
         int cacheLevel = levelStart;
@@ -168,7 +168,7 @@ public class AbsObjectLoader<K, T, M extends AbsObjectLoader.AbsAttachment<K, T>
         }
         ArrayList<M> list = mPendingTasks.remove(attach.token);
         if (list != null && list.size() > 0) {
-            for (AbsAttachment<K, T> attachment : list) {
+            for (M attachment : list) {
                 attachment.object = attach.object;
                 if (isValidObject(attach.object)) {
                     attachment.onLoaded();
@@ -196,8 +196,8 @@ public class AbsObjectLoader<K, T, M extends AbsObjectLoader.AbsAttachment<K, T>
     }
 
     public static class AbsAttachment<K, T> {
-        K token;
-        T object;
+        public K token;
+        public T object;
         public AbsAttachment(K token) {
             this.token = token;
         }
@@ -205,10 +205,14 @@ public class AbsObjectLoader<K, T, M extends AbsObjectLoader.AbsAttachment<K, T>
         public void onLoaded() {}
 
         public void onFailure() {}
+
+        public boolean isValid() {
+            return object != null;
+        }
     }
 
-    public interface AbsCallback<K, T> {
-        void onLoaded(AbsAttachment<K, T> attachment);
-        void onFailure(AbsAttachment<K, T> attachment);
+    public interface AbsCallback<M extends AbsAttachment> {
+        void onLoaded(M attachment);
+        void onFailure(M attachment);
     }
 }

@@ -25,9 +25,14 @@ public class BitmapLoader extends AbsObjectLoader<String, Bitmap, BitmapLoader.A
         public AbsAttachment(String token) {
             super(token);
         }
+
+        @Override
+        public boolean isValid() {
+            return super.isValid() && !object.isRecycled();
+        }
     }
 
-    public interface Callback extends AbsCallback<String, Bitmap> {
+    public interface Callback<M extends AbsAttachment> extends AbsCallback<M> {
     }
 
 }
