@@ -7,6 +7,7 @@ import java.util.List;
  */
 
 public abstract class ItemInfo {
+    public static final int NO_ID = -1;
     int id = -1;
     int type;
     int container, screen, x, y, spanX, spanY;

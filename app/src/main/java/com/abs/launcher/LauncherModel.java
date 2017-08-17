@@ -1,5 +1,7 @@
 package com.abs.launcher;
 
+import com.abs.launcher.loader.LoaderTask;
+
 import java.lang.ref.WeakReference;
 
 /**

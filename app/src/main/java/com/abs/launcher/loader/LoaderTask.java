@@ -1,5 +1,9 @@
-package com.abs.launcher;
+package com.abs.launcher.loader;
 
+import android.os.Process;
+
+import com.abs.launcher.DaemonThread;
+import com.abs.launcher.LauncherModel;
 import com.abs.launcher.util.SelfReference;
 
 /**
@@ -43,7 +47,10 @@ public class LoaderTask implements Runnable {
     }
 
     protected void load() {
+        android.os.Process.setThreadPriority(mParams.isLauching ? Process.THREAD_PRIORITY_DEFAULT : Process.THREAD_PRIORITY_BACKGROUND);
+        keep_running: {
 
+        }
     }
 
     public static class Builder {
@@ -62,5 +69,7 @@ public class LoaderTask implements Runnable {
 
     private static class LoaderTaskParams {
         boolean reloadWorkspace;
+        boolean isFirstLoad;
+        boolean isLauching;
     }
 }

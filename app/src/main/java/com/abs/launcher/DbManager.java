@@ -1,5 +1,7 @@
 package com.abs.launcher;
 
+import android.database.Cursor;
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 import java.lang.annotation.ElementType;
@@ -47,7 +49,7 @@ public class DbManager {
         int NO_ID = -1;
     }
 
-    public interface Favorites extends Columns {
+    private interface FavoritesColumns extends Columns {
         @COLUMN(TYPE.TEXT)
         String INTENT = "intent";
         @COLUMN(TYPE.BLOB)
@@ -72,13 +74,49 @@ public class DbManager {
         String WIDGET_ID = "widgetId";
     }
 
-    public interface Applications extends BaseColumns {
+    public static class Favorites implements FavoritesColumns {
+        public static Uri getUri() {
+            return Uri.parse("content://" + LauncherProvider.AUTHORITY + "/" + TABLE_FAVORITE);
+        }
+    }
 
+    private interface ApplicationColumns extends BaseColumns {
+
+        @COLUMN(TYPE.TEXT)
         String TITLE = "title";
+        @COLUMN(TYPE.TEXT)
         String INTENT = "intent";
+        @COLUMN(TYPE.INTEGER)
         String ITEM_TYPE = "itemType";
+        @COLUMN(TYPE.INTEGER)
         String STORAGE = "storate";
+        @COLUMN(TYPE.INTEGER)
         String SYSTEM = "system";
+    }
+
+    public static class Applications implements ApplicationColumns {
+        public static Uri getUri() {
+            return Uri.parse("content://" + LauncherProvider.AUTHORITY + "/" + TABLE_ALL_APPS);
+        }
+    }
+
+    public static class ApplicationIndex implements ApplicationColumns {
+        public int
+                idIndex,
+                titleIndex,
+                intentIndex,
+                itemTypeIndex,
+                storageIndex,
+                systemIndex;
+
+        public ApplicationIndex(Cursor cursor) {
+            idIndex = cursor.getColumnIndex(_ID);
+            titleIndex = cursor.getColumnIndexOrThrow(TITLE);
+            intentIndex = cursor.getColumnIndexOrThrow(INTENT);
+            itemTypeIndex = cursor.getColumnIndexOrThrow(ITEM_TYPE);
+            storageIndex = cursor.getColumnIndexOrThrow(STORAGE);
+            systemIndex = cursor.getColumnIndexOrThrow(SYSTEM);
+        }
     }
 
     public interface HiddenApplications extends BaseColumns {
@@ -112,7 +150,7 @@ public class DbManager {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     private @interface DEFAULT_VALUE {
-        String value() default "";
+        String value();
     }
 
     public static String generateSqlCreation(Class<?> cls) {
@@ -211,4 +249,5 @@ public class DbManager {
         Field primary;
         Field primaryCandidate;
     }
+
 }

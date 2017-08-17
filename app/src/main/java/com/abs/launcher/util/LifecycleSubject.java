@@ -9,6 +9,7 @@ public interface LifecycleSubject {
     void onStop();
     void onPause();
     void onResume();
+    void onDestroy();
 
     public static class LifecycleSubjectAdapter implements LifecycleSubject {
 
@@ -26,6 +27,10 @@ public interface LifecycleSubject {
 
         @Override
         public void onResume() {
+        }
+
+        @Override
+        public void onDestroy() {
         }
     }
 }

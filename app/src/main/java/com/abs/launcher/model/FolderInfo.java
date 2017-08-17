@@ -12,6 +12,8 @@ import java.util.List;
 
 public class FolderInfo extends ItemInfo {
 
+    ArrayList<ItemInfo> folderItems = new ArrayList<>();
+
     @Override
     public List<ItemAction> getDeleteAction(List<ItemAction> actions) {
         if (actions == null) {
