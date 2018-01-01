@@ -1,5 +1,7 @@
 package com.abs.launcher.util;
 
+import com.abs.launcher.util.preference.Pref;
+
 import java.lang.ref.WeakReference;
 
 /**
@@ -7,6 +9,7 @@ import java.lang.ref.WeakReference;
  */
 
 public class SelfReference<T> {
+    @Pref(key="pref",type= Pref.Type.BOOLEAN)
     private WeakReference<T> mRef;
 
     public synchronized T push(T obj) {

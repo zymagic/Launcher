@@ -5,9 +5,6 @@ import android.content.Intent;
 import android.database.Cursor;
 
 import com.abs.launcher.DbManager;
-import com.abs.launcher.model.AppInfo;
-import com.abs.launcher.model.AppWidgetInfo;
-import com.abs.launcher.model.HomeAppInfo;
 
 import java.util.ArrayList;
 

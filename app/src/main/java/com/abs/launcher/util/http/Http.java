@@ -2,9 +2,6 @@ package com.abs.launcher.util.http;
 
 import android.graphics.Bitmap;
 
-import com.abs.launcher.util.BitmapCache;
-import com.abs.launcher.util.IOUtils;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +12,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by zy on 17-6-12.

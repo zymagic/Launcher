@@ -27,6 +27,7 @@ public class ViewTouchHandler {
     private int mTouchState = TOUCH_STATE_REST;
 
     private PointF mTouchPoint = new PointF();
+    private PointF mDownPoint = new PointF();
 
     public ViewTouchHandler(Context context) {
         this(context, null);

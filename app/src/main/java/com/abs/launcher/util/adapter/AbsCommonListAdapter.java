@@ -7,9 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.abs.launcher.util.AbsObjectLoader;
-import com.abs.launcher.util.BitmapLoader;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

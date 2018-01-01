@@ -2,8 +2,6 @@ package com.abs.launcher.util;
 
 import android.graphics.Bitmap;
 
-import com.abs.launcher.util.cache.AbsCache;
-
 import java.util.Map;
 
 /**
