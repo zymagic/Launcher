@@ -3,8 +3,6 @@ package com.abs.launcher.util.component;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.abs.launcher.util.LifecycleObservable;
-
 /**
  * Created by zy on 17-8-16.
  */

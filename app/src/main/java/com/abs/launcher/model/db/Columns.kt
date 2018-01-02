@@ -55,9 +55,10 @@ const val SYSTEM = "system"
 @Type(ColumnType.INTEGER)
 const val STORAGE = "storage"
 
-open class Columns(vararg val cs: KProperty<*>) : BaseColumns
+open class Columns(val table: String, vararg val cs: KProperty<String>) : BaseColumns
 
 object Favorites : Columns(
+        TABLE_FAVORITES,
         ::CELL_X,
         ::CELL_Y,
         ::SPAN_X,
@@ -69,5 +70,35 @@ object Favorites : Columns(
 )
 
 object Applications : Columns(
-
+        TABLE_APPS,
+        ::TITLE,
+        ::INTENT,
+        ::ITEM_TYPE,
+        ::STORAGE,
+        ::SYSTEM
 )
+
+private fun generateSQL(p: KProperty<String>): String {
+    var value: String = p.name.toLowerCase()
+    var an: Type? = p.annotations.find { it is Type }?.let { it as Type }
+    var typeStr = an?.type?.name ?: ""
+    var isPrimary = p.annotations.any { it is  PrimaryKey}
+    var isNotNull = p.annotations.any { it is NotNull }
+    var def = p.annotations.find { it is Def }.let { if (it == null) "" else (" DEFAULT " + (it as Def).value) }
+    return "$value $typeStr${if (isPrimary) " PRIMARY KEY" else ""}${if (isNotNull) " NOT NULL" else ""}$def"
+}
+
+fun generateSQL(p: Columns): String {
+    var sql = "CREATE TABLE ${p.table} ("
+    var first = true
+    for (pro in p.cs) {
+        if (first) {
+            first = false
+        } else {
+            sql += ", "
+        }
+        sql += generateSQL(pro)
+    }
+    sql += ")"
+    return sql
+}

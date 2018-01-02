@@ -1,5 +1,8 @@
 package com.abs.launcher.model
 
+import android.content.Intent
+import android.graphics.drawable.Drawable
+
 /**
  * Created by zy on 17-12-17.
  */
@@ -18,10 +21,13 @@ val NO_POSITION = Position(-1, -1, -1, -1, -1)
 
 fun Position.isEmpty() = this.screen < 0 || this.cellX < 0 || this.cellY < 0
 
-interface ItemAction
+data class ItemAction(val title: String, val icon: Drawable, val intent: Intent)
+
+const val CONTAINER_DESKTOP = -100
+const val CONTAINER_DOCKBAR = -101
 
 const val ITEM_TYPE_APPLICATION = 0
 const val ITEM_TYPE_SHORTCUT = 1
 const val ITEM_TYPE_APP_WIDGET = 2
-const val ITEM_TYPE_WIDGET_VIEW = 3;
-const val ITEM_TYPE_FOLDER = 4;
+const val ITEM_TYPE_WIDGET_VIEW = 3
+const val ITEM_TYPE_FOLDER = 4

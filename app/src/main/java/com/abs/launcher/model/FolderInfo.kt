@@ -5,13 +5,26 @@ package com.abs.launcher.model
  */
 class FolderInfo: ItemInfo(ITEM_TYPE_FOLDER) {
 
-    val contents: MutableList<FolderItemInfo> = ArrayList()
+    private val contents: MutableList<FolderItemInfo> = ArrayList()
 
     override fun getActionList(): List<ItemAction> {
         return ArrayList()
     }
 
+    fun add(info: FolderItemInfo) {
+        info.getInfo().position.container = id as Int
+        for ((index, item) in contents.withIndex()) {
+            if (item.getInfo().position.cellX >= info.getInfo().position.cellX) {
+                contents.add(index, info)
+                return
+            }
+        }
+        contents.add(info)
+    }
 
+    fun getContents(): List<FolderItemInfo> {
+        return ArrayList(contents)
+    }
 }
 
 interface FolderItemInfo {
