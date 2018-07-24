@@ -6,7 +6,7 @@ import com.abs.launcher.util.LifecycleObservable
 /**
  * Created by zy on 18-1-2.
  */
-class LifecycleActivity : Activity() {
+open class LifecycleActivity : Activity() {
     val lifecycle: LifecycleObservable = LifecycleObservable()
 
     override fun onStart() {

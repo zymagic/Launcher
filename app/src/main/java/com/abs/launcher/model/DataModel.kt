@@ -1,14 +1,36 @@
 package com.abs.launcher.model
 
+import android.content.ComponentName
+import android.content.Intent
+
 /**
  * Created by zy on 17-12-17.
  */
 class DataModel {
-    var allApplications: MutableList<AppInfo> = ArrayList()
-    var allHomeItems: MutableList<out HomeItemInfo> = ArrayList()
+    val allApplications: MutableList<AppInfo> = ArrayList()
 
-    var allAppWidgets: MutableList<AppWidgetInfo> = ArrayList()
-    var allWidgetViews: MutableList<WidgetViewInfo> = ArrayList()
-    var allFolders: MutableList<FolderInfo> = ArrayList()
-    var folderMap: MutableMap<Long, FolderInfo> = HashMap()
+    val allShortcuts: MutableList<HomeAppInfo> = ArrayList()
+    val allAppWidgets: MutableList<AppWidgetInfo> = ArrayList()
+    val allWidgetViews: MutableList<WidgetViewInfo> = ArrayList()
+    val folderMap: MutableMap<Long, FolderInfo> = HashMap()
+
+    fun clear() {
+        allApplications.clear()
+        allShortcuts.clear()
+        allAppWidgets.clear()
+        allWidgetViews.clear()
+        folderMap.clear()
+    }
+
+    fun getApp(intent: Intent) : AppInfo? {
+        return allApplications.find { it.intent.component == intent.component }
+    }
+
+    fun getApp(component: ComponentName) : AppInfo? {
+        return allApplications.find { it.intent.component == component }
+    }
+
+    fun getHomeAppInfo(info: AppInfo) : HomeAppInfo? {
+        return allShortcuts.find { it.appInfo == info }
+    }
 }

@@ -4,7 +4,6 @@ import android.database.Cursor
 import android.os.Handler
 import android.os.Looper
 import java.io.Closeable
-import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -13,8 +12,6 @@ import java.util.concurrent.Future
  * Created by zy on 17-12-18.
  */
 val UI_HANDLER = Handler(Looper.getMainLooper())
-
-fun Runnable.runOnUiThread() = UI_HANDLER.post(this)
 
 fun <R> runOnUiThread(f: () -> R) {
     if (Looper.getMainLooper() == Looper.myLooper()) {
@@ -27,6 +24,14 @@ fun <R> runOnUiThread(f: () -> R) {
 fun <R> postInUiThread(delay: Long = 0, f: () -> R) = UI_HANDLER.postDelayed({ f() }, delay)
 
 fun <R> postInHandler(handler: Handler, delay: Long, f:() -> R) = handler.postDelayed({ f() }, delay)
+
+fun <R> runInLooper(f: () -> R) {
+    if (Looper.myLooper() != null) {
+        f()
+    } else {
+        runOnUiThread(f)
+    }
+}
 
 val EXECUTOR = Executors.newCachedThreadPool()
 
@@ -111,15 +116,13 @@ class SafeBlock(t: () -> Unit) {
     }
 }
 
-
 fun test2() {
-   async {
-       //do something
-       runOnUiThread {
+    async {
+        //do something
+        runOnUiThread {
 
-       }
-   }.callback {
+        }
+    }.callback {
 
-   }
-
+    }
 }

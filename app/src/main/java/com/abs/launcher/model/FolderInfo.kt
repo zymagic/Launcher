@@ -3,7 +3,15 @@ package com.abs.launcher.model
 /**
  * Created by zy on 17-12-17.
  */
-class FolderInfo: ItemInfo(ITEM_TYPE_FOLDER) {
+class FolderInfo : HomeItemInfo(ITEM_TYPE_FOLDER) {
+
+    var title: String? = null
+        get() {
+            if (field == null) {
+                //TODO get default folder name from resource
+            }
+            return field
+        }
 
     private val contents: MutableList<FolderItemInfo> = ArrayList()
 
@@ -12,7 +20,7 @@ class FolderInfo: ItemInfo(ITEM_TYPE_FOLDER) {
     }
 
     fun add(info: FolderItemInfo) {
-        info.getInfo().position.container = id as Int
+        info.getInfo().position.container = id
         for ((index, item) in contents.withIndex()) {
             if (item.getInfo().position.cellX >= info.getInfo().position.cellX) {
                 contents.add(index, info)
@@ -25,8 +33,12 @@ class FolderInfo: ItemInfo(ITEM_TYPE_FOLDER) {
     fun getContents(): List<FolderItemInfo> {
         return ArrayList(contents)
     }
+
+    fun isEmpty(): Boolean {
+        return contents.isEmpty()
+    }
 }
 
 interface FolderItemInfo {
-    fun getInfo(): ItemInfo
+    fun getInfo(): HomeItemInfo
 }

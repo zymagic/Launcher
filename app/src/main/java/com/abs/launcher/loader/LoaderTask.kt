@@ -1,7 +1,10 @@
 package com.abs.launcher.loader
 
+import android.content.Context
+import com.abs.launcher.LauncherModel
 import com.abs.launcher.exitDaemon
 import com.abs.launcher.runInDaemon
+import com.abs.launcher.util.runOnUiThread
 import com.abs.launcher.util.safe
 
 /**
@@ -10,7 +13,7 @@ import com.abs.launcher.util.safe
 class LoaderTask: Runnable {
 
     companion object {
-        var previousTask: LoaderTask? = null
+        private var previousTask: LoaderTask? = null
     }
 
     private var params: Builder
@@ -29,7 +32,18 @@ class LoaderTask: Runnable {
     }
 
     private fun load() {
-        var databaseBinder = DatabaseLoader()
+        params.model.callbackRef?.get()?.let {
+            runOnUiThread {
+                it.onStartBindingInHome()
+            }
+        }
+        DatabaseLoader(params.context, params.model).load()
+        params.model.callbackRef?.get()?.let {
+            runOnUiThread {
+                it.onFinishBindingInHome()
+            }
+        }
+        SyncLoader(params.context, params.model).sync()
     }
 
     fun start() {
@@ -47,9 +61,11 @@ class LoaderTask: Runnable {
     }
 
     data class Builder(
-        var isFirst: Boolean = false,
-        var isLaunching: Boolean = false,
-        var reloadWorkspace: Boolean = false
+            var context: Context,
+            var model: LauncherModel,
+            var isFirst: Boolean = false,
+            var isLaunching: Boolean = false,
+            var reloadWorkspace: Boolean = false
     ) {
         fun build(): LoaderTask = LoaderTask(this)
     }

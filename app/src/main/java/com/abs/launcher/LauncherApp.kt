@@ -8,7 +8,7 @@ import android.app.Application
 class LauncherApp: Application() {
 
     companion object {
-        var instance: LauncherApp? = null
+        lateinit var instance: LauncherApp
     }
 
     var model: LauncherModel? = null

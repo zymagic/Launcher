@@ -1,12 +1,14 @@
 package com.abs.launcher.model.db
 
+import android.database.Cursor
+import android.net.Uri
 import android.provider.BaseColumns
+import com.abs.launcher.AUTHORITY
 import kotlin.reflect.KProperty
 
 /**
  * Created by zy on 17-12-29.
  */
-const val AUTHORITY = "com.abs.launcher"
 const val TABLE_FAVORITES = "favorites"
 const val TABLE_APPS = "apps"
 const val TABLE_HIDDEN = "hidden"
@@ -47,6 +49,9 @@ const val TITLE_RESOURCE = "title_resource"
 @Type(ColumnType.TEXT)
 const val TITLE_PACKAGE = "title_package"
 
+@Type(ColumnType.INTEGER)
+const val WIDGET_ID = "widget_id"
+
 @Type(ColumnType.TEXT)
 const val EXTRA = "extra"
 
@@ -55,7 +60,20 @@ const val SYSTEM = "system"
 @Type(ColumnType.INTEGER)
 const val STORAGE = "storage"
 
-open class Columns(val table: String, vararg val cs: KProperty<String>) : BaseColumns
+open class Columns(val table: String, vararg val cs: KProperty<String>) : BaseColumns {
+    fun getUri(notify: Boolean = false): Uri {
+        return Uri.parse("content://$AUTHORITY/$table${if (notify) "?notify=true" else ""}")
+    }
+
+    fun getUri(id: Int, notify: Boolean = false) {
+        Uri.parse("content://$AUTHORITY/$table/$id${if(notify) "?notify=true" else ""}")
+    }
+
+}
+
+open class CursorIndex(cursor: Cursor) {
+    val idIndex = cursor.getColumnIndexOrThrow(BaseColumns._ID)
+}
 
 object Favorites : Columns(
         TABLE_FAVORITES,
@@ -66,17 +84,44 @@ object Favorites : Columns(
         ::CONTAINER,
         ::SCREEN,
         ::ITEM_TYPE,
-        ::CATEGORY
+        ::CATEGORY,
+        ::INTENT,
+        ::WIDGET_ID,
+        ::EXTRA
 )
+
+class FavoriteIndex(cursor: Cursor) : CursorIndex(cursor) {
+    val cellXIndex = cursor.getColumnIndexOrThrow(CELL_X)
+    val cellYIndex = cursor.getColumnIndexOrThrow(CELL_Y)
+    val spanXIndex = cursor.getColumnIndexOrThrow(SPAN_X)
+    val spanYIndex = cursor.getColumnIndexOrThrow(SPAN_Y)
+    val containerIndex = cursor.getColumnIndexOrThrow(CONTAINER)
+    val screenIndex = cursor.getColumnIndexOrThrow(SCREEN)
+    val itemTypeIndex = cursor.getColumnIndexOrThrow(ITEM_TYPE)
+    val categoryIndex = cursor.getColumnIndexOrThrow(CATEGORY)
+    val intentIndex = cursor.getColumnIndexOrThrow(INTENT)
+    val widgetIdIndex = cursor.getColumnIndexOrThrow(WIDGET_ID)
+    val extraIndex = cursor.getColumnIndexOrThrow(EXTRA)
+}
 
 object Applications : Columns(
         TABLE_APPS,
         ::TITLE,
         ::INTENT,
-        ::ITEM_TYPE,
+        ::ICON,
         ::STORAGE,
-        ::SYSTEM
+        ::SYSTEM,
+        ::CATEGORY
 )
+
+class ApplicationIndex(cursor: Cursor) : CursorIndex(cursor) {
+    val titleIndex = cursor.getColumnIndexOrThrow(TITLE)
+    val intentIndex = cursor.getColumnIndexOrThrow(INTENT)
+    val iconIndex = cursor.getColumnIndexOrThrow(ITEM_TYPE)
+    val storageIndex = cursor.getColumnIndexOrThrow(STORAGE)
+    val systemIndex = cursor.getColumnIndexOrThrow(SYSTEM)
+    val categoryIndex = cursor.getColumnIndexOrThrow(CATEGORY)
+}
 
 private fun generateSQL(p: KProperty<String>): String {
     var value: String = p.name.toLowerCase()
@@ -89,7 +134,7 @@ private fun generateSQL(p: KProperty<String>): String {
 }
 
 fun generateSQL(p: Columns): String {
-    var sql = "CREATE TABLE ${p.table} ("
+    var sql = "CREATE TABLE IF NOT EXISTS ${p.table} ("
     var first = true
     for (pro in p.cs) {
         if (first) {

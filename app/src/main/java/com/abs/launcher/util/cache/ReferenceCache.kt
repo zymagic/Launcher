@@ -14,14 +14,6 @@ abstract class ReferenceCache<K, V, R: Reference<V>>: AbsCache<K, V> {
     var mReferenceMap: HashMap<K, R>
     var mReferenceQueue: ReferenceQueue<V> = ReferenceQueue()
 
-    var R.key: K
-        get() {
-            return key
-        }
-        set(value) {
-            key = value
-        }
-
     fun HashMap<K, R>.dump(): Map<K, V> {
         var ret = HashMap<K, V>(this.size)
         for (key in this.keys) {
@@ -46,8 +38,8 @@ abstract class ReferenceCache<K, V, R: Reference<V>>: AbsCache<K, V> {
 
     override fun onPut(key: K, value: V) {
         trim()
-        var r = ref(value)
-        r.key = key
+        var r = ref(key, value)
+        mReferenceMap[key] = r
     }
 
     override fun onGet(key: K): V? {
@@ -64,12 +56,13 @@ abstract class ReferenceCache<K, V, R: Reference<V>>: AbsCache<K, V> {
         while (true) {
             val r = mReferenceQueue.poll()
             r?.clear() ?: break
-            mReferenceMap.remove((r as R).key)
+            mReferenceMap.remove(keyOf(r as R))
             r.get()?.let { onClear(it) }
         }
     }
 
-    abstract fun ref(value: V, queue: ReferenceQueue<V> = mReferenceQueue): R
+    abstract fun ref(key: K, value: V, queue: ReferenceQueue<V> = mReferenceQueue): R
+    abstract fun keyOf(ref: R): K
 
     open fun onClear(value: V) {}
 }
@@ -78,16 +71,28 @@ open class SoftCache<K, V> : ReferenceCache<K, V, SoftReference<V>> {
     constructor() : super()
     constructor(initialSize: Int) : super(initialSize)
 
-    override fun ref(value: V, queue: ReferenceQueue<V>): SoftReference<V> {
-        return SoftReference(value, queue)
+    override fun ref(key: K, value: V, queue: ReferenceQueue<V>): SoftReference<V> {
+        return MySoftReference(key, value, queue)
     }
+
+    override fun keyOf(ref: SoftReference<V>): K {
+        return (ref as SoftCache<K, V>.MySoftReference).key
+    }
+
+    inner class MySoftReference(val key: K, value: V, queue: ReferenceQueue<V>) : SoftReference<V>(value, queue)
 }
 
 class WeakCache<K, V> : ReferenceCache<K, V, WeakReference<V>> {
     constructor() : super()
     constructor(initialSize: Int) : super(initialSize)
 
-    override fun ref(value: V, queue: ReferenceQueue<V>): WeakReference<V> {
-        return WeakReference(value, queue)
+    override fun ref(key: K, value: V, queue: ReferenceQueue<V>): WeakReference<V> {
+        return MyWeakReference(key, value, queue)
     }
+
+    override fun keyOf(ref: WeakReference<V>): K {
+        return (ref as WeakCache<K, V>.MyWeakReference).key
+    }
+
+    inner class MyWeakReference(val key: K, value: V, queue: ReferenceQueue<V>) : WeakReference<V>(value, queue)
 }

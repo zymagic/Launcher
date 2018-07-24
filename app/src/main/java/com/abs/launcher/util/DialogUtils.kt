@@ -1,14 +1,16 @@
 package com.abs.launcher.util
 
+import android.app.Activity
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.DialogInterface
 import com.abs.launcher.LauncherApp
 
 /**
  * Created by zy on 17-12-27.
  */
-fun alert(init: AlertDialog.Builder.() -> Unit): AlertDialog {
-    return AlertDialog.Builder(LauncherApp.instance).apply(init).show()
+fun Activity.alert(init: AlertDialog.Builder.() -> Unit): AlertDialog {
+    return AlertDialog.Builder(this).apply(init).show()
 }
 
 fun AlertDialog.Builder.yes(txt: Int = android.R.string.ok, onClick: ()-> Unit = {}): AlertDialog.Builder {
@@ -24,7 +26,7 @@ fun AlertDialog.Builder.yes(txt: String, onClick: ()-> Unit = {}): AlertDialog.B
 }
 
 fun AlertDialog.Builder.no(txt: String, onClick: ()-> Unit = {}): AlertDialog.Builder {
-    if (txt != null && txt.isNotEmpty()) {
+    if (txt.isNotEmpty()) {
         setNegativeButton(txt, {_,_ -> onClick()})
     }
     return this
@@ -52,12 +54,18 @@ fun AlertDialog.onCancel(dismiss: () -> Unit) : AlertDialog {
     return this
 }
 
-fun ttt() {
-    alert {
-        setTitle("aaaa")
-        setMessage("aaa")
-        yes {  }
-        no {  }
+fun <R> Activity.progress(dialog: ProgressDialog? = null, run: () -> R) : ProgressDialog {
+    var pd = dialog ?: ProgressDialog(this)
+    pd.show()
+    async {
+        run()
+    }.callbackOnUiThread {
+        pd.dismiss()
     }
+    return pd
+}
+
+fun ttt() {
+
 }
 

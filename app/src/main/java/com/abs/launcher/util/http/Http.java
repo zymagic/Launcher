@@ -103,8 +103,8 @@ public class Http {
         } catch (IOException e) {
             out.msg = e.getMessage();
         } finally {
-            IOUtils.close(is);
-            IOUtils.close(os);
+//            IOUtils.close(is);
+//            IOUtils.close(os);
         }
     }
 
@@ -137,8 +137,8 @@ public class Http {
         } catch (IOException e) {
             out.msg = e.getMessage();
         } finally {
-            IOUtils.close(is);
-            IOUtils.close(os);
+//            IOUtils.close(is);
+//            IOUtils.close(os);
         }
     }
 
@@ -160,8 +160,8 @@ public class Http {
         } catch (IOException e) {
             out.msg = e.getMessage();
         } finally {
-            IOUtils.close(is);
-            IOUtils.close(os);
+//            IOUtils.close(is);
+//            IOUtils.close(os);
         }
     }
 

@@ -14,7 +14,7 @@ abstract class ItemInfo(var type: Int) {
     abstract fun getActionList(): List<ItemAction>
 }
 
-data class Position(var container: Int, var screen: Int, var cellX: Int, var cellY: Int, var spanX: Int = 1, var spanY: Int = 1)
+data class Position(var container: Long, var screen: Int, var cellX: Int, var cellY: Int, var spanX: Int = 1, var spanY: Int = 1)
 
 const val NO_ID: Long = -1
 val NO_POSITION = Position(-1, -1, -1, -1, -1)

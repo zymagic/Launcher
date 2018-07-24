@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import com.abs.launcher.LauncherApp
-import kotlin.math.roundToInt
 
 /**
  * Created by zy on 17-12-26.
@@ -14,12 +13,40 @@ fun <T: View> View.sss(id: Int): T? {
     return findViewById(id)?.let { it as T }
 }
 
-private val density: Float get() = LauncherApp.instance?.resources?.displayMetrics?.density ?: 0f
+fun <T: View> T.detach() {
+    var vp = parent
+    if (vp is ViewGroup) {
+        vp.removeView(this)
+    }
+}
 
-fun Int.toPx(): Int = times(density).roundToInt()
-fun Float.toPx(): Int = times(density).roundToInt()
-fun Double.toPx(): Int = times(density).roundToInt()
-fun Long.toPx(): Int = times(density).roundToInt()
+fun <T: View> T.onClick(listener: (T) -> Unit) {
+    setOnClickListener { listener(this) }
+}
+
+var View.leftPadding: Int
+    set(value) {
+        setPadding(value, paddingTop, paddingRight, paddingBottom)
+    }
+    get() = paddingLeft
+
+var View.rightPadding: Int
+    set(value) {
+        setPadding(paddingLeft, paddingTop, value, paddingBottom)
+    }
+    get() = paddingRight
+
+var View.topPadding: Int
+    set(value) {
+        setPadding(paddingLeft, value, paddingRight, paddingBottom)
+    }
+    get() = paddingTop
+
+var View.bottomPadding: Int
+    set(value) {
+        setPadding(paddingLeft, paddingTop, paddingRight, value)
+    }
+    get() = paddingBottom
 
 fun linearLayout(context: Context, init: LinearLayout.() -> Unit): LinearLayout {
     var layout = LinearLayout(context)
@@ -50,41 +77,52 @@ fun <G: ViewGroup> viewGroup(layout: G, init: G.() -> Unit): G {
 }
 
 fun <G: ViewGroup> G.linearLayout(init: LinearLayout.() -> Unit): LinearLayout {
-    return view(LinearLayout(context), init)
+    return hierarchy(LinearLayout(context), init)
 }
 
 fun <G: ViewGroup> G.frameLayout(init: FrameLayout.() -> Unit): FrameLayout {
-    return view(FrameLayout(context), init)
+    return hierarchy(FrameLayout(context), init)
 }
 
 fun <G: ViewGroup> G.relativeLayout(init: RelativeLayout.() -> Unit): RelativeLayout {
-    return view(RelativeLayout(context), init)
+    return hierarchy(RelativeLayout(context), init)
 }
 
 fun <G: ViewGroup, V: View> G.view(create: (context: Context) -> V, init: V.() -> Unit): V {
-    return view(create(context), init)
+    return hierarchy(create(context), init)
 }
 
 fun <G: ViewGroup> G.textView(init: TextView.() -> Unit): TextView {
-    return view(TextView(context), init)
+    return hierarchy(TextView(context), init)
 }
 
 fun <G: ViewGroup> G.imageView(init: ImageView.() -> Unit): ImageView {
-    return view(ImageView(context), init)
+    return hierarchy(ImageView(context), init)
 }
 
 fun <G: ViewGroup> G.button(init: Button.() -> Unit): Button {
-    return view(Button(context), init)
+    return hierarchy(Button(context), init)
 }
 
 fun <G: ViewGroup> G.view(init: View.() -> Unit): View {
-    return view(View(context), init)
+    return hierarchy(View(context), init)
 }
 
-private fun <G: ViewGroup, V: View> G.view(v: V, init: V.() -> Unit): V {
+private fun <G: ViewGroup, V: View> G.hierarchy(v: V, init: V.() -> Unit): V {
     v.init()
     addView(v)
     return v
+}
+
+inline fun <reified V: View> view(context: Context, init: V.() -> Unit): V {
+    var constructor = V::class.java.getConstructor(Context::class.java)
+    var layout: V = constructor.newInstance(context)
+    layout.init()
+    return layout
+}
+
+fun <V: View> ViewGroup.res(layout: Int, init: V.() -> Unit): V {
+    return hierarchy(context.inflate(layout), init)
 }
 
 fun <V: View> V.lp(init: ViewGroup.LayoutParams.() -> Unit) {
@@ -93,7 +131,7 @@ fun <V: View> V.lp(init: ViewGroup.LayoutParams.() -> Unit) {
 
 fun test() {
     var context = LauncherApp.instance
-    context?.let {
+    context.let {
         view(TestView(it)) {
             relativeLayout {
                 textView {
@@ -106,8 +144,12 @@ fun test() {
             textView {
 
             }
+            res<TextView>(123) {
+
+            }
         }
     }
+
 }
 
 class TestView(context: Context): ViewGroup(context) {
