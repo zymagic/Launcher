@@ -12,8 +12,8 @@ import kotlin.math.abs
 class ViewTouchHelper(context: Context, private val direction: Int, private var listener: ViewTouchListener) {
     private val touchSlop: Int = ViewConfiguration.get(context).scaledTouchSlop
     private val flingThres = ViewConfiguration.get(context).scaledMinimumFlingVelocity
-    var lastX: Float = -1f
-    var lastY: Float = -1f
+    private var lastX: Float = -1f
+    private var lastY: Float = -1f
     var touchState: Int = TOUCH_STATE_REST
     var isDown: Boolean = false
 

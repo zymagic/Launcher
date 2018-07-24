@@ -9,6 +9,7 @@ import com.abs.launcher.getDefaultHomeScreen
 import com.abs.launcher.getHomeScreenCount
 import com.abs.launcher.model.*
 import com.abs.launcher.model.db.*
+import com.abs.launcher.util.manage
 import com.abs.launcher.util.runOnUiThread
 import com.abs.launcher.util.safe
 
@@ -16,18 +17,20 @@ import com.abs.launcher.util.safe
  * Created by zy on 17-12-18.
  */
 class DatabaseLoader(private val context: Context, private val model: LauncherModel, var loadDesktop: Boolean = true) {
-    var applications: MutableList<AppInfo> = ArrayList()
-    var shortcuts: MutableList<HomeAppInfo> = ArrayList()
-    var widgetViews: MutableList<WidgetViewInfo> = ArrayList()
-    var appWidgets: MutableList<AppWidgetInfo> = ArrayList()
-    var folders: MutableMap<Long, FolderInfo> = HashMap()
+    private val applications: MutableList<AppInfo> = ArrayList()
+    private val shortcuts: MutableList<HomeAppInfo> = ArrayList()
+    private val widgetViews: MutableList<WidgetViewInfo> = ArrayList()
+    private val appWidgets: MutableList<AppWidgetInfo> = ArrayList()
+    private val folders: MutableMap<Long, FolderInfo> = HashMap()
 
     fun load() {
         loadApplications()
-        loadDockbar()
-        loadDesktop()
-        loadFolderItems()
-        var data = model.data
+        if (loadDesktop) {
+            loadDockbar()
+            loadDesktop()
+            loadFolderItems()
+        }
+        val data = model.data
         data.clear()
         data.allApplications.addAll(applications)
         data.allShortcuts.addAll(shortcuts)
@@ -37,8 +40,8 @@ class DatabaseLoader(private val context: Context, private val model: LauncherMo
     }
 
     private fun loadDesktop() {
-        var defaultScreen = getDefaultHomeScreen()
-        var screenCount = getHomeScreenCount()
+        val defaultScreen = getDefaultHomeScreen()
+        val screenCount = getHomeScreenCount()
         var leftIndex = defaultScreen - 1
         var rightIndex = defaultScreen + 1
         loadItem(defaultScreen, CONTAINER_DESKTOP)
@@ -63,91 +66,103 @@ class DatabaseLoader(private val context: Context, private val model: LauncherMo
     }
 
     private fun loadItem(screen: Int, container: Int) {
-        var selection = when (container) {
+        val selection = when (container) {
             CONTAINER_DESKTOP -> "$SCREEN = $screen and $CONTAINER = $container"
             CONTAINER_DOCKBAR -> "$CONTAINER = $container"
             else -> "$CONTAINER >= 0"
         }
-        var items = ArrayList<HomeItemInfo>()
-        var cursor = context.contentResolver.query(Favorites.getUri(), null, selection, null, null)
-        var index = FavoriteIndex(cursor)
-        loadItem@ while (cursor.moveToNext()) {
-            safe {
-                var intent = Intent.parseUri(cursor.getString(index.intentIndex), 0)
-                var itemType = cursor.getInt(index.itemTypeIndex)
-                when (itemType) {
-                    ITEM_TYPE_APPLICATION, ITEM_TYPE_SHORTCUT -> {
-                        var app = applications.find { it.intent == intent }
-                        if (app != null) {
-                            var homeApp = HomeAppInfo(app).apply { commonLoadFromCursor(cursor, index) }
-                            shortcuts.add(homeApp)
-                            items.add(homeApp)
-                            if (homeApp.position.container >= 0) {
-                                getFolder(homeApp.position.container).add(homeApp)
+        val items = ArrayList<HomeItemInfo>()
+        context.contentResolver.query(Favorites.getUri(), null, selection, null, null)
+            .manage {
+                val index = FavoriteIndex(this)
+                loadItem@ while (moveToNext()) {
+                    safe {
+                        val intent = Intent.parseUri(getString(index.intentIndex), 0)
+                        val itemType = getInt(index.itemTypeIndex)
+                        when (itemType) {
+                            ITEM_TYPE_APPLICATION, ITEM_TYPE_SHORTCUT -> {
+                                val app = applications.find { it.intent == intent }
+                                if (app != null) {
+                                    val homeApp = HomeAppInfo(app).apply { commonLoadFromCursor(this@manage, index) }
+                                    shortcuts.add(homeApp)
+                                    items.add(homeApp)
+                                    if (homeApp.position.container >= 0) {
+                                        getFolder(homeApp.position.container).add(homeApp)
+                                    }
+                                }
+                            }
+                            ITEM_TYPE_APP_WIDGET -> {
+                                val widgetId = getInt(index.widgetIdIndex)
+                                val widget = AppWidgetInfo(widgetId).apply { commonLoadFromCursor(this@manage, index) }
+                                appWidgets.add(widget)
+                                items.add(widget)
+                            }
+                            ITEM_TYPE_FOLDER -> {
+                                val folder = FolderInfo().apply { commonLoadFromCursor(this@manage, index) }
+                                folders[folder.id] = folder
+                                items.add(folder)
                             }
                         }
                     }
-                    ITEM_TYPE_APP_WIDGET -> {
-                        var widgetId = cursor.getInt(index.widgetIdIndex)
-                        var widget = AppWidgetInfo(widgetId).apply { commonLoadFromCursor(cursor, index) }
-                        appWidgets.add(widget)
-                        items.add(widget)
-                    }
-                    ITEM_TYPE_FOLDER -> {
-                        var folder = FolderInfo().apply { commonLoadFromCursor(cursor, index) }
-                        folders.put(folder.id, folder)
-                        items.add(folder)
-                    }
                 }
             }
-        }
+
         if (!items.isEmpty()) {
-            var cbk = model.callbackRef?.get()
+            val cbk = model.callbackRef?.get()
             runOnUiThread {
-                cbk?.bindItemLoaded(items)
+                val actualCallback = model.callbackRef?.get()
+                if (actualCallback == cbk) {
+                    cbk?.bindItemLoaded(items)
+                }
             }
         }
     }
 
     private fun loadApplications() {
-        var cursor = context.contentResolver.query(Applications.getUri(), null, null, null, null)
-        var index = ApplicationIndex(cursor)
-        while (cursor.moveToNext()) {
-            safe {
-                var id = cursor.getLong(index.idIndex)
-                var title = cursor.getString(index.titleIndex)
-                var intent = Intent.parseUri(cursor.getString(index.intentIndex), 0)
-                var icon = cursor.getString(index.iconIndex)
+        context.contentResolver.query(Applications.getUri(), null, null, null, null)
+            .manage {
+                val index = ApplicationIndex(this)
+                while (moveToNext()) {
+                    safe {
+                        val id = getLong(index.idIndex)
+                        val title = getString(index.titleIndex)
+                        val intent = Intent.parseUri(getString(index.intentIndex), 0)
+                        val icon = getString(index.iconIndex)
 
-                var app = AppInfo(title, IconCache.defaultIcon, intent)
-                app.id = id
-                app.iconResource = icon
-                app.category = cursor.getInt(index.categoryIndex)
-                app.storage = cursor.getInt(index.storageIndex)
-                app.isSystem = cursor.getInt(index.storageIndex) == 1
+                        val app = AppInfo(title, IconCache.defaultIcon, intent)
+                        app.id = id
+                        app.iconResource = IconResource(icon)
+                        app.category = getInt(index.categoryIndex)
+                        app.storage = getInt(index.storageIndex)
+                        app.isSystem = getInt(index.storageIndex) == 1
 
-                applications.add(app)
+                        applications.add(app)
+                    }
+                }
             }
-        }
-        var cbk = model.callbackRef?.get()
+
+        val cbk = model.callbackRef?.get()
         runOnUiThread {
-            cbk?.bindAppLoaded(applications)
+            val actualCbk = model.callbackRef?.get()
+            if (cbk == actualCbk) {
+                cbk?.bindAppLoaded(applications)
+            }
         }
     }
 
-    fun HomeItemInfo.commonLoadFromCursor(cursor: Cursor, index: FavoriteIndex) {
+    private fun HomeItemInfo.commonLoadFromCursor(cursor: Cursor, index: FavoriteIndex) {
         id = cursor.getLong(index.idIndex)
-        var cellX = cursor.getInt(index.cellXIndex)
-        var cellY = cursor.getInt(index.cellYIndex)
-        var spanX = cursor.getInt(index.spanXIndex)
-        var spanY = cursor.getInt(index.spanYIndex)
-        var container = cursor.getLong(index.containerIndex)
-        var screen = cursor.getInt(index.screenIndex)
+        val cellX = cursor.getInt(index.cellXIndex)
+        val cellY = cursor.getInt(index.cellYIndex)
+        val spanX = cursor.getInt(index.spanXIndex)
+        val spanY = cursor.getInt(index.spanYIndex)
+        val container = cursor.getLong(index.containerIndex)
+        val screen = cursor.getInt(index.screenIndex)
         position = Position(container, screen, cellX, cellY, spanX, spanY)
         category = cursor.getInt(index.categoryIndex)
     }
 
-    fun getFolder(id: Long) : FolderInfo {
+    private fun getFolder(id: Long) : FolderInfo {
         return folders[id] ?: FolderInfo().apply { this.id = id; folders[id] = this }
     }
 }

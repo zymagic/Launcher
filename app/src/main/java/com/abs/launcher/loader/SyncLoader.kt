@@ -13,9 +13,9 @@ import com.abs.launcher.util.runOnUiThread
  */
 class SyncLoader(private val context: Context, val model: LauncherModel) {
 
-    var added: MutableList<AppInfo> = ArrayList()
-    var updated: MutableList<AppInfo> = ArrayList()
-    var removed: MutableList<AppInfo> = ArrayList()
+    private val added: MutableList<AppInfo> = ArrayList()
+    private val updated: MutableList<AppInfo> = ArrayList()
+    private val removed: MutableList<AppInfo> = ArrayList()
 
     fun sync() {
         syncApps()
@@ -23,22 +23,22 @@ class SyncLoader(private val context: Context, val model: LauncherModel) {
     }
 
     private fun syncApps() {
-        var pm = context.packageManager
-        var loadedApps = ArrayList(model.data.allApplications)
-        var intent = Intent(Intent.ACTION_MAIN).apply { this.addCategory(Intent.CATEGORY_LAUNCHER) }
-        var resolveInfos = pm.queryIntentActivities(intent, 0)
+        val pm = context.packageManager
+        val loadedApps = ArrayList(model.data.allApplications)
+        val resolveIntent = Intent(Intent.ACTION_MAIN).apply { this.addCategory(Intent.CATEGORY_LAUNCHER) }
+        val resolveInfos = pm.queryIntentActivities(resolveIntent, 0)
         for (ri in resolveInfos) {
-            var cn = ComponentName(ri.activityInfo.packageName, ri.activityInfo.name)
-            var loadedApp = model.data.getApp(cn)
+            val cn = ComponentName(ri.activityInfo.packageName, ri.activityInfo.name)
+            val loadedApp = model.data.getApp(cn)
             if (loadedApp != null) {
                 loadedApps.remove(loadedApp)
                 var update = false
-                var title = ri.loadLabel(pm).toString()
+                val title = ri.loadLabel(pm).toString()
                 if (title != loadedApp.title) {
                     loadedApp.title = title
                     update = true
                 }
-                var system = (ri.activityInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                val system = (ri.activityInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
                 if (system != loadedApp.isSystem) {
                     loadedApp.isSystem = system
                     update = true
@@ -48,16 +48,16 @@ class SyncLoader(private val context: Context, val model: LauncherModel) {
                     updated.add(loadedApp)
                 }
             } else {
-                var intent = Intent().apply { component = cn }
-                var title = ri.loadLabel(pm)
-                var icon = ri.loadIcon(pm)
-                var appInfo = AppInfo(title.toString(), icon, intent)
+                val intent = Intent().apply { component = cn }
+                val title = ri.loadLabel(pm)
+                val icon = ri.loadIcon(pm)
+                val appInfo = AppInfo(title.toString(), icon, intent)
                 added.add(appInfo)
             }
         }
         removed.addAll(loadedApps)
 
-        var cbk = model.callbackRef?.get()
+        val cbk = model.callbackRef?.get()
         if (cbk != null) {
             runOnUiThread {
                 cbk.bindAppAdded(added)
@@ -65,7 +65,7 @@ class SyncLoader(private val context: Context, val model: LauncherModel) {
             runOnUiThread {
                 cbk.bindAppUpdated(updated)
             }
-            var updatedHomeApps = updated.mapNotNull { model.data.getHomeAppInfo(it) }
+            val updatedHomeApps = updated.mapNotNull { model.data.getHomeAppInfo(it) }
             runOnUiThread {
                 cbk.bindItemUpdated(updatedHomeApps)
             }
@@ -76,14 +76,14 @@ class SyncLoader(private val context: Context, val model: LauncherModel) {
     }
 
     private fun syncFolders() {
-        var folderToRemove = ArrayList(model.data.folderMap.filterValues { !it.isEmpty() }.values)
+        val folderToRemove = ArrayList(model.data.folderMap.filterValues { it.isEmpty() }.values)
         if (folderToRemove.isEmpty()) {
             return
         }
         for (folder in folderToRemove) {
             model.data.folderMap.remove(folder.id)
         }
-        var cbk = model.callbackRef?.get()
+        val cbk = model.callbackRef?.get()
         if (cbk != null) {
             runOnUiThread {
                 cbk.bindItemRemoved(folderToRemove)

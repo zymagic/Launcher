@@ -90,6 +90,11 @@ fun Cursor.closeQuietly() {
     safe { close() }
 }
 
+fun Cursor.manage(f: Cursor.() -> Unit) {
+    f(this)
+    closeQuietly()
+}
+
 fun safe(t: () -> Unit): SafeBlock {
     return SafeBlock(t)
 }

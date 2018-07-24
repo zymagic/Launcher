@@ -12,11 +12,9 @@ data class AppInfo(var title: String, var icon: Drawable?, val intent: Intent) {
     var storage: Int = 0
     var category: Int = -1
 
-    var iconResource: String? = null
+    var iconResource: IconResource? = null
 
-    var isShortcut = intent.component == null
+    val isShortcut = intent.component == null
 
-    var lastUpdateTime: Long = 0
-    var lastCalledTime: Long = 0
-    var calledNum: Int = 0
+    var usage: Usage = Usage()
 }

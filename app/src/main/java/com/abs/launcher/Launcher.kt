@@ -10,5 +10,6 @@ class Launcher : LifecycleActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
     }
 }

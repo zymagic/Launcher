@@ -11,7 +11,7 @@ class LauncherApp: Application() {
         lateinit var instance: LauncherApp
     }
 
-    var model: LauncherModel? = null
+    val model: LauncherModel by lazy { LauncherModel(this) }
 
     override fun onCreate() {
         super.onCreate()

@@ -1,7 +1,10 @@
 package com.abs.launcher.model
 
+import android.content.ContentValues
 import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.provider.BaseColumns
+import com.abs.launcher.model.db.*
 
 /**
  * Created by zy on 17-12-17.
@@ -12,6 +15,21 @@ abstract class ItemInfo(var type: Int) {
     var position: Position = NO_POSITION
 
     abstract fun getActionList(): List<ItemAction>
+
+    open fun fillDbValue(cv: ContentValues) {
+        with (cv) {
+            put(BaseColumns._ID, id)
+
+            put(CATEGORY, category)
+
+            put(CONTAINER, position.container)
+            put(SCREEN, position.screen)
+            put(CELL_X, position.cellX)
+            put(CELL_Y, position.cellY)
+            put(CELL_X, position.spanX)
+            put(CELL_Y, position.spanY)
+        }
+    }
 }
 
 data class Position(var container: Long, var screen: Int, var cellX: Int, var cellY: Int, var spanX: Int = 1, var spanY: Int = 1)

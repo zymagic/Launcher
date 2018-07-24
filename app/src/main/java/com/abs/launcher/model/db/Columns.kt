@@ -65,8 +65,8 @@ open class Columns(val table: String, vararg val cs: KProperty<String>) : BaseCo
         return Uri.parse("content://$AUTHORITY/$table${if (notify) "?notify=true" else ""}")
     }
 
-    fun getUri(id: Int, notify: Boolean = false) {
-        Uri.parse("content://$AUTHORITY/$table/$id${if(notify) "?notify=true" else ""}")
+    fun getUri(id: Long, notify: Boolean = false): Uri {
+        return Uri.parse("content://$AUTHORITY/$table/$id${if(notify) "?notify=true" else ""}")
     }
 
 }
@@ -127,7 +127,7 @@ private fun generateSQL(p: KProperty<String>): String {
     var value: String = p.name.toLowerCase()
     var an: Type? = p.annotations.find { it is Type }?.let { it as Type }
     var typeStr = an?.type?.name ?: ""
-    var isPrimary = p.annotations.any { it is  PrimaryKey}
+    var isPrimary = p.annotations.any { it is PrimaryKey}
     var isNotNull = p.annotations.any { it is NotNull }
     var def = p.annotations.find { it is Def }.let { if (it == null) "" else (" DEFAULT " + (it as Def).value) }
     return "$value $typeStr${if (isPrimary) " PRIMARY KEY" else ""}${if (isNotNull) " NOT NULL" else ""}$def"

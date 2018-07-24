@@ -10,5 +10,5 @@ val WORK_THREAD: HandlerThread = HandlerThread("launcher-daemon").apply { this.s
 val WORK_HANDLER: Handler = Handler(WORK_THREAD.looper)
 
 fun Runnable.runInDaemon() = WORK_HANDLER.post(this)
-fun <R> runInDaemon(f: () -> R) = WORK_HANDLER.post({ f() })
 fun Runnable.exitDaemon() = WORK_HANDLER.removeCallbacks(this)
+fun runInDaemon(f: () -> Unit) = WORK_HANDLER.post(f)
