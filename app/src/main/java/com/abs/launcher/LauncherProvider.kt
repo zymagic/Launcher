@@ -25,37 +25,35 @@ class LauncherProvider : ContentProvider() {
     }
 
     override fun insert(uri: Uri, values: ContentValues): Uri {
-        var sql = SqlArgument(uri)
-        var db = database.writableDatabase
-        var id = db.insert(sql.table, null, values)
-        if (id as Int == -1) {
+        val sql = SqlArgument(uri)
+        val db = database.writableDatabase
+        val id = db.insert(sql.table, null, values)
+        if (id.toInt() == -1) {
             return BASE_URI
         }
         return uri.buildUpon().appendPath(id.toString()).build()
     }
 
     override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
-        var sql = SqlArgument(uri)
-        var db = database.readableDatabase
-        var cursor = db.query(sql.table, projection, selection, selectionArgs, null, null, sortOrder)
-        return cursor
+        val sql = SqlArgument(uri)
+        val db = database.readableDatabase
+        return db.query(sql.table, projection, selection, selectionArgs, null, null, sortOrder)
     }
 
     override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?): Int {
-        var sql = SqlArgument(uri)
-        var db = database.writableDatabase
-        var count = db.update(sql.table, values, selection, selectionArgs)
-        return count
+        val sql = SqlArgument(uri)
+        val db = database.writableDatabase
+        return db.update(sql.table, values, selection, selectionArgs)
     }
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
-        var sql = SqlArgument(uri)
-        var db = database.writableDatabase
+        val sql = SqlArgument(uri)
+        val db = database.writableDatabase
         return db.delete(sql.table, selection, selectionArgs)
     }
 
     override fun getType(uri: Uri): String {
-        var sql = SqlArgument(uri)
+        val sql = SqlArgument(uri)
         return if (sql.id == null) {
             "vnd.android.cursor.dir/vnd.launcher." + sql.table
         } else {

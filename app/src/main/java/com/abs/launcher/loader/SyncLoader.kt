@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import com.abs.launcher.LauncherModel
 import com.abs.launcher.model.AppInfo
-import com.abs.launcher.util.runOnUiThread
+import com.zy.kotlinutils.core.uiThread
 
 /**
  * Created by zy on 18-1-7.
@@ -59,17 +59,17 @@ class SyncLoader(private val context: Context, val model: LauncherModel) {
 
         val cbk = model.callbackRef?.get()
         if (cbk != null) {
-            runOnUiThread {
+            uiThread {
                 cbk.bindAppAdded(added)
             }
-            runOnUiThread {
+            uiThread {
                 cbk.bindAppUpdated(updated)
             }
             val updatedHomeApps = updated.mapNotNull { model.data.getHomeAppInfo(it) }
-            runOnUiThread {
+            uiThread {
                 cbk.bindItemUpdated(updatedHomeApps)
             }
-            runOnUiThread {
+            uiThread {
                 cbk.bindAppRemoved(removed)
             }
         }
@@ -85,7 +85,7 @@ class SyncLoader(private val context: Context, val model: LauncherModel) {
         }
         val cbk = model.callbackRef?.get()
         if (cbk != null) {
-            runOnUiThread {
+            uiThread {
                 cbk.bindItemRemoved(folderToRemove)
             }
         }

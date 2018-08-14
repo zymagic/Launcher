@@ -1,7 +1,7 @@
 package com.abs.launcher
 
 import android.os.Bundle
-import com.abs.launcher.util.component.LifecycleActivity
+import com.zy.kotlinutils.core.component.LifecycleActivity
 
 /**
  * Created by zy on 18-1-3.

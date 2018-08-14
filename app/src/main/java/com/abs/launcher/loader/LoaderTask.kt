@@ -4,8 +4,9 @@ import android.content.Context
 import com.abs.launcher.LauncherModel
 import com.abs.launcher.exitDaemon
 import com.abs.launcher.runInDaemon
-import com.abs.launcher.util.runOnUiThread
-import com.abs.launcher.util.safe
+import com.zy.kotlinutils.core.forward
+import com.zy.kotlinutils.core.safe
+import com.zy.kotlinutils.core.uiThread
 
 /**
  * Created by zy on 17-12-18.
@@ -33,13 +34,13 @@ class LoaderTask: Runnable {
 
     private fun load() {
         params.model.callbackRef?.get()?.let {
-            runOnUiThread {
+            uiThread {
                 it.onStartBindingInHome()
             }
         }
         DatabaseLoader(params.context, params.model).load()
         params.model.callbackRef?.get()?.let {
-            runOnUiThread {
+            uiThread {
                 it.onFinishBindingInHome()
             }
         }

@@ -9,9 +9,9 @@ import com.abs.launcher.getDefaultHomeScreen
 import com.abs.launcher.getHomeScreenCount
 import com.abs.launcher.model.*
 import com.abs.launcher.model.db.*
-import com.abs.launcher.util.manage
-import com.abs.launcher.util.runOnUiThread
-import com.abs.launcher.util.safe
+import com.zy.kotlinutils.core.manage
+import com.zy.kotlinutils.core.safe
+import com.zy.kotlinutils.core.uiThread
 
 /**
  * Created by zy on 17-12-18.
@@ -109,7 +109,7 @@ class DatabaseLoader(private val context: Context, private val model: LauncherMo
 
         if (!items.isEmpty()) {
             val cbk = model.callbackRef?.get()
-            runOnUiThread {
+            uiThread {
                 val actualCallback = model.callbackRef?.get()
                 if (actualCallback == cbk) {
                     cbk?.bindItemLoaded(items)
@@ -142,7 +142,7 @@ class DatabaseLoader(private val context: Context, private val model: LauncherMo
             }
 
         val cbk = model.callbackRef?.get()
-        runOnUiThread {
+        uiThread {
             val actualCbk = model.callbackRef?.get()
             if (cbk == actualCbk) {
                 cbk?.bindAppLoaded(applications)
