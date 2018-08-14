@@ -124,12 +124,12 @@ class ApplicationIndex(cursor: Cursor) : CursorIndex(cursor) {
 }
 
 private fun generateSQL(p: KProperty<String>): String {
-    var value: String = p.name.toLowerCase()
-    var an: Type? = p.annotations.find { it is Type }?.let { it as Type }
-    var typeStr = an?.type?.name ?: ""
-    var isPrimary = p.annotations.any { it is PrimaryKey}
-    var isNotNull = p.annotations.any { it is NotNull }
-    var def = p.annotations.find { it is Def }.let { if (it == null) "" else (" DEFAULT " + (it as Def).value) }
+    val value: String = p.name.toLowerCase()
+    val an: Type? = p.annotations.find { it is Type }?.let { it as Type }
+    val typeStr = an?.type?.name ?: ""
+    val isPrimary = p.annotations.any { it is PrimaryKey}
+    val isNotNull = p.annotations.any { it is NotNull }
+    val def = p.annotations.find { it is Def }.let { if (it == null) "" else (" DEFAULT " + (it as Def).value) }
     return "$value $typeStr${if (isPrimary) " PRIMARY KEY" else ""}${if (isNotNull) " NOT NULL" else ""}$def"
 }
 
