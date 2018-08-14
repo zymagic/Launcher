@@ -10,11 +10,11 @@ import com.abs.launcher.LauncherApp
  * Created by zy on 17-12-26.
  */
 fun <T: View> View.sss(id: Int): T? {
-    return findViewById(id)?.let { it as T }
+    return findViewById(id)
 }
 
 fun <T: View> T.detach() {
-    var vp = parent
+    val vp = parent
     if (vp is ViewGroup) {
         vp.removeView(this)
     }

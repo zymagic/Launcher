@@ -1,1 +1,3 @@
 include ':app'
+include ':kotlin-utils'
+project(':kotlin-utils').projectDir = file('../KotlinUitls')
