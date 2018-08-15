@@ -1,15 +1,15 @@
 package com.abs.launcher.loader
 
 import android.content.Context
-import android.content.Intent
-import android.database.Cursor
 import com.abs.launcher.IconCache
 import com.abs.launcher.LauncherModel
 import com.abs.launcher.getDefaultHomeScreen
 import com.abs.launcher.getHomeScreenCount
 import com.abs.launcher.model.*
 import com.abs.launcher.model.db.*
-import com.zy.kotlinutils.core.manage
+import com.zy.kotlinutils.core.db.manage
+import com.zy.kotlinutils.core.db.map
+import com.zy.kotlinutils.core.db.parseObject
 import com.zy.kotlinutils.core.safe
 import com.zy.kotlinutils.core.uiThread
 
@@ -72,18 +72,19 @@ class DatabaseLoader(private val context: Context, private val model: LauncherMo
             else -> "$CONTAINER >= 0"
         }
         val items = ArrayList<HomeItemInfo>()
-        context.contentResolver.query(Favorites.getUri(), null, selection, null, null)
+        context.contentResolver.query(uri<Favorites>(), null, selection, null, null)
             .manage {
-                val index = FavoriteIndex(this)
-                loadItem@ while (moveToNext()) {
+                map {
+                    parseObject<Favorites>()
+                }.forEach {
                     safe {
-                        val intent = Intent.parseUri(getString(index.intentIndex), 0)
-                        val itemType = getInt(index.itemTypeIndex)
+                        val intent = it.intent
+                        val itemType = it.itemType
                         when (itemType) {
                             ITEM_TYPE_APPLICATION, ITEM_TYPE_SHORTCUT -> {
                                 val app = applications.find { it.intent == intent }
                                 if (app != null) {
-                                    val homeApp = HomeAppInfo(app).apply { commonLoadFromCursor(this@manage, index) }
+                                    val homeApp = HomeAppInfo(app).apply { commonLoadFromCursor(it) }
                                     shortcuts.add(homeApp)
                                     items.add(homeApp)
                                     if (homeApp.position.container >= 0) {
@@ -92,13 +93,13 @@ class DatabaseLoader(private val context: Context, private val model: LauncherMo
                                 }
                             }
                             ITEM_TYPE_APP_WIDGET -> {
-                                val widgetId = getInt(index.widgetIdIndex)
-                                val widget = AppWidgetInfo(widgetId).apply { commonLoadFromCursor(this@manage, index) }
+                                val widgetId = it.widgetId
+                                val widget = AppWidgetInfo(widgetId).apply { commonLoadFromCursor(it) }
                                 appWidgets.add(widget)
                                 items.add(widget)
                             }
                             ITEM_TYPE_FOLDER -> {
-                                val folder = FolderInfo().apply { commonLoadFromCursor(this@manage, index) }
+                                val folder = FolderInfo().apply { commonLoadFromCursor(it) }
                                 folders[folder.id] = folder
                                 items.add(folder)
                             }
@@ -119,22 +120,23 @@ class DatabaseLoader(private val context: Context, private val model: LauncherMo
     }
 
     private fun loadApplications() {
-        context.contentResolver.query(Applications.getUri(), null, null, null, null)
+        context.contentResolver.query(uri<Applications>(), null, null, null, null)
             .manage {
-                val index = ApplicationIndex(this)
-                while (moveToNext()) {
+                map {
+                    parseObject<Applications>()
+                }.forEach {
                     safe {
-                        val id = getLong(index.idIndex)
-                        val title = getString(index.titleIndex)
-                        val intent = Intent.parseUri(getString(index.intentIndex), 0)
-                        val icon = getString(index.iconIndex)
+                        val id = it.id
+                        val title = it.title!!
+                        val intent = it.intent!!
+                        val icon = it.icon!!
 
                         val app = AppInfo(title, IconCache.defaultIcon, intent)
                         app.id = id
                         app.iconResource = IconResource(icon)
-                        app.category = getInt(index.categoryIndex)
-                        app.storage = getInt(index.storageIndex)
-                        app.isSystem = getInt(index.storageIndex) == 1
+                        app.category = it.category
+                        app.storage = it.storage
+                        app.isSystem = it.system
 
                         applications.add(app)
                     }
@@ -150,16 +152,16 @@ class DatabaseLoader(private val context: Context, private val model: LauncherMo
         }
     }
 
-    private fun HomeItemInfo.commonLoadFromCursor(cursor: Cursor, index: FavoriteIndex) {
-        id = cursor.getLong(index.idIndex)
-        val cellX = cursor.getInt(index.cellXIndex)
-        val cellY = cursor.getInt(index.cellYIndex)
-        val spanX = cursor.getInt(index.spanXIndex)
-        val spanY = cursor.getInt(index.spanYIndex)
-        val container = cursor.getLong(index.containerIndex)
-        val screen = cursor.getInt(index.screenIndex)
+    private fun HomeItemInfo.commonLoadFromCursor(favorites: Favorites) {
+        id = favorites.id
+        val cellX = favorites.cellX
+        val cellY = favorites.cellY
+        val spanX = favorites.spanX
+        val spanY = favorites.spanY
+        val container = favorites.container
+        val screen = favorites.screen
         position = Position(container, screen, cellX, cellY, spanX, spanY)
-        category = cursor.getInt(index.categoryIndex)
+        category = favorites.category
     }
 
     private fun getFolder(id: Long) : FolderInfo {

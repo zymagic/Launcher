@@ -9,7 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import com.abs.launcher.model.db.Applications
 import com.abs.launcher.model.db.Favorites
-import com.abs.launcher.model.db.generateSQL
+import com.zy.kotlinutils.core.db.createTable
+import com.zy.kotlinutils.core.db.dropTable
 
 /**
  * Created by zy on 18-1-7.
@@ -64,13 +65,13 @@ class LauncherProvider : ContentProvider() {
     class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "launcher.db", null, DATABASE_VERSION) {
 
         override fun onCreate(db: SQLiteDatabase) {
-            db.execSQL(generateSQL(Favorites))
-            db.execSQL(generateSQL(Applications))
+            db.execSQL(createTable(Favorites::class))
+            db.execSQL(createTable(Applications::class))
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            db.execSQL("DROP TABLE IF EXISTS ${Favorites.table}")
-            db.execSQL("DROP TABLE IF EXISTS ${Applications.table}")
+            db.execSQL(dropTable(Favorites::class))
+            db.execSQL(dropTable(Applications::class))
         }
 
     }
